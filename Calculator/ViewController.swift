@@ -10,40 +10,28 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    var deleteTimer = NSTimer()
-    var holdDeleteTimer = 0
-    var calculationString: String = ""              //Mainstring used to store all input
-    var resultNumber: Double = 0                    //temporary storage after calculations
-    var didOperation = false                        //Bool flag prevent multiple uses of operators in a row
+    var deleteTimer = NSTimer()             //This boy right here. Don't start with this boy, he will get outta control
+    var holdDeleteTimer = 0                 //Hold on Jack. Never let go.
+    var calculationString: String = ""      //Mainstring used to store all input
+    var resultNumber: Double = 0            //temporary storage after calculations
+    var didOperation = false                //Bool flag prevent multiple uses of operators in a row
     
     @IBOutlet weak var resultLabel: UILabel!
     //Buttons from 0 through 9
-    @IBAction func buttonOne(sender: AnyObject)     { buttonPressed("1", did: false) }
-    
-    @IBAction func buttonTwo(sender: AnyObject)     { buttonPressed("2", did: false) }
-    
-    @IBAction func buttonThree(sender: AnyObject)   { buttonPressed("3", did: false) }
-    
-    @IBAction func buttonFour(sender: AnyObject)    { buttonPressed("4", did: false) }
-    
-    @IBAction func buttonFive(sender: AnyObject)    { buttonPressed("5", did: false) }
-    
-    @IBAction func buttonSix(sender: AnyObject)     { buttonPressed("6", did: false) }
-    
-    @IBAction func buttonSeven(sender: AnyObject)   { buttonPressed("7", did: false) }
-    
-    @IBAction func buttonEight(sender: AnyObject)   { buttonPressed("8", did: false) }
-    
-    @IBAction func buttonNine(sender: AnyObject)    { buttonPressed("9", did: false) }
-    
-    @IBAction func buttonZero(sender: AnyObject)    { buttonPressed("0", did: false) }
+    @IBAction func buttonNumber(sender: AnyObject) {
+        if let number = sender.currentTitle! {
+            buttonPressed(number, did: false)
+        }
+    }
+
     //Checks to prevent two decimals in a row
     @IBAction func buttonDecimal(sender: AnyObject) {
         if calculationString.characters.last != "." {
             buttonPressed(".", did: false)
         }
     }
-    //Has extra else if that will allow for negative numbers after pressing an operation button
+    //A lonely lonely button.  Will never share the warmth of others. Solitude defines you
+    //Such a negative feeling you emit
     @IBAction func buttonSubtract(sender: AnyObject) {
         if !didOperation {
             buttonPressed("-", did: true)
@@ -51,26 +39,23 @@ class ViewController: UIViewController {
             buttonPressed("-", did: true)
         }
     }
-    //count checks here are to prevent having an operator before numbers
-    @IBAction func buttonAddition(sender: AnyObject) {
-        if !didOperation && calculationString.characters.count > 0 { buttonPressed("+", did: true) }
+    //Button handles all operations aside from subtract because I had that one.
+    //It deserves to be alone forever! >=(
+    @IBAction func buttonOperations(sender: AnyObject) {
+        if let operation = sender.currentTitle! {
+        if !didOperation && calculationString.characters.count > 0 {
+            buttonPressed(operation, did: true)
+            }
+        }
     }
-    
-    @IBAction func buttonDivide(sender: AnyObject) {
-        if !didOperation && calculationString.characters.count > 0 { buttonPressed("/", did: true) }
-    }
-    
-    @IBAction func buttonMultiply(sender: AnyObject) {
-        if !didOperation && calculationString.characters.count > 0 { buttonPressed("x", did: true) }
-    }
-    
+    //Starts timer for Clear to check against.
     @IBAction func buttonClearStart(sender: AnyObject) {
         deleteTimer.invalidate()
         deleteTimer = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector:#selector(holdDeleteTimeSetter), userInfo: nil, repeats: true)
     }
     
     
-    //Allows for two choices, Clr emptys mainstring, Dlt will remove last element
+    //Tapping will delete 1 element from string, holding will delete whole string
     @IBAction func buttonClearEnd(sender: AnyObject) {
         deleteTimer.invalidate()
         
@@ -94,13 +79,9 @@ class ViewController: UIViewController {
             showResults()
         }
     }
-    
-    func holdDeleteTimeSetter() {
-        holdDeleteTimer += 1
-    }
-    
     //equal will check and clean the main string to prevent crashes before performing calculations
     @IBAction func buttonEqual(sender: AnyObject) {
+        print("\(sender.currentTitle)")
         var calcString = calculationString
         var lastIndex = calcString.characters.count - 1
         if calcString.characters.count > 2 {
@@ -115,16 +96,14 @@ class ViewController: UIViewController {
                     
                     calcString.removeAtIndex(calcString.startIndex.advancedBy(lastIndex))
             }
-            print(calcString)
             resultNumber = calculateAll(decipherCalc(calcString))
             calculationString = String(resultNumber)
             calculationString = shortenNumber()
             showResults()
         }
     }
-    
+    //Overrides stuff I don't understand. so..
     override func viewDidLoad()             { super.viewDidLoad() }
-    
     override func didReceiveMemoryWarning() { super.didReceiveMemoryWarning() }
     
     //Seperate string in to arrays of numbers and operations
@@ -158,6 +137,7 @@ class ViewController: UIViewController {
     }
     
     //Goes through array of operations and does math based on Order of Operations
+    //PEMDAS with out the parenthesis or exponents.. but still the same..  MDAS?
     func calculateAll(numOper: ([Double], [String])) -> Double {
         var isMultiplyDivide = true
         var isAddSubtract = false
@@ -225,15 +205,12 @@ class ViewController: UIViewController {
     }
 
     //doMath function will call on these functions to perform math on two numbers
-    func add(first: Double, second: Double) -> Double       {return (first + second) }
+    func add(first: Double, second: Double) -> Double           {return (first + second) }
+    func subtract(first: Double, second: Double) -> Double      {return (first - second) }
+    func multiply(first: Double, second: Double) -> Double      {return (first * second) }
+    func divide(first: Double, second: Double) -> Double        {return (first / second) }
     
-    func subtract(first: Double, second: Double) -> Double  {return (first - second) }
-    
-    func multiply(first: Double, second: Double) -> Double  {return (first * second) }
-    
-    func divide(first: Double, second: Double) -> Double    {return (first / second) }
-    
-    //clears calculationString, might do more????
+    //clears calculationString, might do more????  This is a pathetic function. Feel ashamed
     func clearAll()                                         { calculationString = "" }
     //Checks number after calculations to see if there are hanging zeroes or decimals that can be removed
     func shortenNumber() -> String {
@@ -266,11 +243,15 @@ class ViewController: UIViewController {
     func showResults() {
         resultLabel.text = calculationString
     }
-    //called from IBActions that adds elements to the main string
+    //Adds next string element to the main calculationString that I have overcomplicated and bloated. Who's crying? Not me! You're crying!!
     func buttonPressed(button: String, did: Bool) {
         calculationString += button
         didOperation = did
         showResults()
+    }
+    //increased depending on how long you hold on to Delete
+    func holdDeleteTimeSetter() {
+        holdDeleteTimer += 1
     }
 }
 
