@@ -10,11 +10,11 @@ import UIKit
 
 class ViewController: UIViewController {
     
+    var deleteTimer = NSTimer()
+    var holdDeleteTimer = 0
     var calculationString: String = ""              //Mainstring used to store all input
     var resultNumber: Double = 0                    //temporary storage after calculations
     var didOperation = false                        //Bool flag prevent multiple uses of operators in a row
-    
-    @IBOutlet weak var buttonDltClrLabel: UILabel!
     
     @IBOutlet weak var resultLabel: UILabel!
     //Buttons from 0 through 9
@@ -63,14 +63,23 @@ class ViewController: UIViewController {
     @IBAction func buttonMultiply(sender: AnyObject) {
         if !didOperation && calculationString.characters.count > 0 { buttonPressed("x", did: true) }
     }
+    
+    @IBAction func buttonClearStart(sender: AnyObject) {
+        deleteTimer.invalidate()
+        deleteTimer = NSTimer.scheduledTimerWithTimeInterval(0.2, target: self, selector:#selector(holdDeleteTimeSetter), userInfo: nil, repeats: true)
+    }
+    
+    
     //Allows for two choices, Clr emptys mainstring, Dlt will remove last element
-    @IBAction func buttonClear(sender: AnyObject) {
-        let label = buttonDltClrLabel.text!
-        switch label {
-        case "Clr":
+    @IBAction func buttonClearEnd(sender: AnyObject) {
+        deleteTimer.invalidate()
+        
+        if holdDeleteTimer > 2 {
+            print("Clear")
             clearAll()
             showResults()
-        case "Dlt":
+        } else if !calculationString.isEmpty{
+            print("Delete")
             calculationString.removeAtIndex(calculationString.endIndex.predecessor())
             if (calculationString.characters.last == "+" ||
                 calculationString.characters.last == "-" ||
@@ -81,10 +90,13 @@ class ViewController: UIViewController {
                 didOperation = false
             }
             showResults()
-        default:
-            showResults()
         }
     }
+    
+    func holdDeleteTimeSetter() {
+        holdDeleteTimer += 1
+    }
+    
     //equal will check and clean the main string to prevent crashes before performing calculations
     @IBAction func buttonEqual(sender: AnyObject) {
         var calcString = calculationString
@@ -106,7 +118,6 @@ class ViewController: UIViewController {
             calculationString = String(resultNumber)
             calculationString = shortenNumber()
             showResults()
-            buttonDltClrLabel.text = "Clr"
         }
     }
     
@@ -251,11 +262,6 @@ class ViewController: UIViewController {
     }
     //prints the results to the resultsLabel
     func showResults() {
-        if calculationString.characters.count > 0 {
-            buttonDltClrLabel.text = "Dlt"
-        } else {
-            buttonDltClrLabel.text = "Clr"
-        }
         resultLabel.text = calculationString
     }
     //called from IBActions that adds elements to the main string
