@@ -76,10 +76,12 @@ class ViewController: UIViewController {
         
         if holdDeleteTimer > 2 {
             print("Clear")
+            holdDeleteTimer = 0
             clearAll()
             showResults()
         } else if !calculationString.isEmpty{
             print("Delete")
+            holdDeleteTimer = 0
             calculationString.removeAtIndex(calculationString.endIndex.predecessor())
             if (calculationString.characters.last == "+" ||
                 calculationString.characters.last == "-" ||
